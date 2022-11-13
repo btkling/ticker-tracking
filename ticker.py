@@ -1,5 +1,5 @@
-import yfinance as yf
 import pandas as pd
+import yfinance as yf
 
 # list of tickers
 symbols = pd.read_csv("symbols_to_track.csv", header=None)
