@@ -2,21 +2,38 @@ import pandas as pd
 import yfinance as yf
 
 # list of tickers
-symbols = pd.read_csv("symbols_to_track.csv", header=None)
 
-tickers = symbols[0].tolist()
+def extract_symbollist(filename):
+    symbols = pd.read_csv(
+        filename,
+        header = None
+    )
+   
+    return symbols[0].tolist()
 
-# import data
-tickerdata = yf.download(
-    tickers = tickers,
-    group_by = "Ticker",
-    start="2022-11-01",
-    end="2022-11-30"
-    # period="1w",
-    # interval="1d"
-)
+def import_tickerdata(symbols, startdate, enddate):
+    dl = yf.download(
+        tickers = symbols,
+        group_by = "Ticker",
+        start = startdate,
+        end = enddate
+    )
 
-tickerdata = tickerdata.stack(level=0).rename_axis(["Date","Ticker"]).reset_index(level=1)
+    return dl.stack(level=0).rename_axis(["Date","Ticker"]).reset_index(level=1)
 
-# combine data and export to csv
-tickerdata.to_csv('test_data2.csv')
+
+def main():
+    symbols = extract_symbollist("symbols_to_track.csv")
+
+    # import data
+    tickerdata = import_tickerdata(
+        symbols = symbols,
+        startdate = "2022-11-01",
+        enddate = "2022-12-31"
+    )
+
+    # combine data and export to csv
+    tickerdata.to_csv('test_data3.csv')
+
+if __name__ == "__main__":
+    main()
