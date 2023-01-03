@@ -36,7 +36,7 @@ def main():
     )
 
     # combine data and export to csv
-    tickerdata.to_csv('test_data3.csv')
+    tickerdata.to_csv('data/latest_ticker_output.csv')
 
 if __name__ == "__main__":
     main()
