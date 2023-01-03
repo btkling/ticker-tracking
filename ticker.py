@@ -26,7 +26,7 @@ def main():
     symbols = extract_symbollist("symbols_to_track.csv")
 
     TODAY = pd.Timestamp.today()
-    STDATE = TODAY + pd.Timedelta(-7, 'day')
+    STDATE = TODAY + pd.Timedelta(-30, 'day')
 
     # import data
     tickerdata = import_tickerdata(
