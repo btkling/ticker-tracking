@@ -25,11 +25,14 @@ def import_tickerdata(symbols, startdate, enddate):
 def main():
     symbols = extract_symbollist("symbols_to_track.csv")
 
+    TODAY = pd.Timestamp.today()
+    STDATE = TODAY + pd.Timedelta(-7, 'day')
+
     # import data
     tickerdata = import_tickerdata(
         symbols = symbols,
-        startdate = "2022-11-01",
-        enddate = "2022-12-31"
+        startdate = STDATE,
+        enddate = TODAY
     )
 
     # combine data and export to csv
