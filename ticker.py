@@ -23,7 +23,11 @@ def import_tickerdata(symbols, startdate, enddate):
 
 
 def main():
-    symbols = extract_symbollist("symbols_to_track.csv")
+    filename = "symbols_to_track.csv"
+    directory = "/mnt/e/git/ticker-tracking/"
+    fpath = f"{directory}{filename}"
+
+    symbols = extract_symbollist(fpath)
 
     TODAY = pd.Timestamp.today()
     STDATE = TODAY + pd.Timedelta(-30, 'day')
@@ -36,7 +40,9 @@ def main():
     )
 
     # combine data and export to csv
-    tickerdata.to_csv('data/latest_ticker_output.csv')
+    output_filename = "data/latest_ticker_output.csv"
+    output_fpath = f"{directory}{output_filename}"
+    tickerdata.to_csv(output_fpath)
 
 if __name__ == "__main__":
     main()
