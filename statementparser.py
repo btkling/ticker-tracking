@@ -3,8 +3,10 @@ import re
 
 
 def main():
-    file_path = 'E:/git/ticker-tracking/data/schwab/'
+    file_path = '/mnt/e/git/ticker-tracking/data/schwab/'
     file_name = 'XXXXX911_Transactions_20230104-181416.csv'
+    start_date = "2022-11-09"
+    end_date = "2023-01-01"
     schwabdf = read_schwab_statement(file_path, file_name)
 
     schwabdf = clean_dates(schwabdf, "Date")
@@ -12,10 +14,7 @@ def main():
     valid_actions = [
         'Buy',
         'Sell',
-        'Short Term Cap Gain Reinvest',
         'Reinvest Shares',
-        'Reinvest Dividend',
-        'Long Term Cap Gain Reinvest'
     ]
     schwabdf = filter_schwab_actions(schwabdf, valid_actions)
 
@@ -28,9 +27,20 @@ def main():
     for col in numbercols:
         schwabdf = clean_numbercol(schwabdf, col)
 
-    schwabdf = filter_date(schwabdf, "Date", "2022-11-09", "2023-01-01")
+
+    schwab_symbols = [
+        'LGILX',
+        'SICNX',
+        'SWISX',
+        'SWLGX',
+        'SWTSX'
+    ]
+    schwabdf = filter_symbols(schwabdf, "Symbol", schwab_symbols)
+
+    schwabdf = filter_date(schwabdf, "Date", start_date, end_date)
     print(schwabdf.info())
     print(schwabdf.head())
+    schwabdf.to_csv('/mnt/e/git/ticker-tracking/data/clean_statements/schwab.csv', index=False)
 
 
 def read_schwab_statement(file_path, file_name):
@@ -64,6 +74,11 @@ def clean_numbercol(df, column):
 def filter_date(df, datecol, start_date, end_date):
     df = df[(df[datecol] >= start_date) & (df[datecol] <= end_date)]
 
+    return df
+
+
+def filter_symbols(df, symbolcol, symbollist):
+    df = df[ df[symbolcol].isin(symbollist) ]
     return df
 
 
