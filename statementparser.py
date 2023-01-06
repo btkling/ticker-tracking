@@ -3,31 +3,30 @@ import re
 
 
 def main():
+    # variables shared across all brokers
     base_fp = '/mnt/e/git/ticker-tracking/data/'
-    schwabpath = f'{base_fp}schwab/'
-    file_name = 'XXXXX911_Transactions_20230104-181416.csv'
+    output_fp = f"{base_fp}clean_statements/"
     start_date = "2022-11-09"
     end_date = "2023-01-01"
-    schwabdf = read_schwab_statement(schwabpath, file_name)
 
-    schwabdf = clean_dates(schwabdf, "Date")
+    
+    # broker-specific variables that change
+    schwab_input_file = 'XXXXX911_Transactions_20230104-181416.csv'
 
+
+    # static schwab variables
+    schwabpath = f'{base_fp}schwab/'
     schwab_actions = [
         'Buy',
         'Sell',
         'Reinvest Shares',
     ]
-    schwabdf = filter_schwab_actions(schwabdf, schwab_actions)
-
     schwab_numbers = [
         "Quantity", 
         "Price", 
         "Fees & Comm", 
         "Amount"
     ]
-    for col in schwab_numbers:
-        schwabdf = clean_numbercol(schwabdf, col)
-
     schwab_symbols = [
         'LGILX',
         'SICNX',
@@ -35,11 +34,15 @@ def main():
         'SWLGX',
         'SWTSX'
     ]
+
+    schwabdf = read_schwab_statement(schwabpath, schwab_input_file)
+    schwabdf = clean_dates(schwabdf, "Date")
+    schwabdf = filter_schwab_actions(schwabdf, schwab_actions)
+    for col in schwab_numbers:
+        schwabdf = clean_numbercol(schwabdf, col)
     schwabdf = filter_symbols(schwabdf, "Symbol", schwab_symbols)
-
     schwabdf = filter_date(schwabdf, "Date", start_date, end_date)
-
-    schwabdf.to_csv('/mnt/e/git/ticker-tracking/data/clean_statements/schwab.csv', index=False)
+    schwabdf.to_csv(f'{output_fp}schwab.csv', index=False)
 
 
 
