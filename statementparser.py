@@ -7,6 +7,7 @@ def main():
     win = 'E:/'
     lin = '/mnt/e/'
     base_fp = f'{lin}git/ticker-tracking/data/'
+    input_fp = f"{base_fp}raw_statements/"
     output_fp = f"{base_fp}clean_statements/"
     start_date = "2022-11-09"
     end_date = "2023-01-05"
@@ -18,7 +19,6 @@ def main():
     vanguard_input_file = "ofxdownload.csv"
 
     # static schwab variables
-    schwabpath = f'{base_fp}schwab/'
     schwab_actions = [
         'Buy',
         'Sell',
@@ -39,7 +39,6 @@ def main():
     ]
 
     # static merrill variables
-    merrillpath = f'{base_fp}merrill/'
     merrill_descriptions = [
         "Purchase",
         "Reinvestment"
@@ -55,7 +54,6 @@ def main():
     ]
 
     # static vanguard variables
-    vanguardpath = f'{base_fp}vanguard/'
     vanguard_types=[
         "Buy",
         "Buy (exchange)",
@@ -79,7 +77,7 @@ def main():
     ]
 
     # process schwab statement
-    schwabdf = read_schwab_statement(schwabpath, schwab_input_file)
+    schwabdf = read_schwab_statement(input_fp, schwab_input_file)
     schwabdf = clean_dates(schwabdf, "Date")
     schwabdf = filter_transaction_types(schwabdf, "Action", schwab_actions)
     for col in schwab_numbers:
@@ -90,7 +88,7 @@ def main():
 
 
     # process merrill statement
-    merrilldf = read_merrill_statement(merrillpath, merrill_input_file)
+    merrilldf = read_merrill_statement(input_fp, merrill_input_file)
     merrilldf = clean_dates(merrilldf, "Trade Date")
     merrilldf = filter_merrill_descriptions(merrilldf, merrill_descriptions)
     for col in merrill_numbers:
@@ -100,7 +98,7 @@ def main():
     export_merrill(merrilldf, output_fp, 'merrill.csv')
 
     # process vanguard statement
-    vanguarddf = read_vanguard_statement(vanguardpath, vanguard_input_file)
+    vanguarddf = read_vanguard_statement(input_fp, vanguard_input_file)
     vanguarddf = clean_dates(vanguarddf, "Trade Date")
     vanguarddf = filter_transaction_types(vanguarddf, "Transaction Type", vanguard_types)
     for col in vanguard_numbers:
