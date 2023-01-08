@@ -4,7 +4,7 @@ import numpy as np
 
 def main():
     # variables shared across all brokers
-    win = 'E:/'
+    # win = 'E:/'
     lin = '/mnt/e/'
     base_fp = f'{lin}git/ticker-tracking/data/'
     input_fp = f"{base_fp}raw_statements/"
@@ -12,7 +12,7 @@ def main():
     start_date = "2022-11-09"
     end_date = "2023-01-05"
 
-    
+
     # broker-specific variables that change
     schwab_input_file = 'XXXXX911_Transactions_20230104-181416.csv'
     merrill_input_file = 'ExportData06012023084449.csv'
@@ -25,9 +25,9 @@ def main():
         'Reinvest Shares',
     ]
     schwab_numbers = [
-        "Quantity", 
-        "Price", 
-        "Fees & Comm", 
+        "Quantity",
+        "Price",
+        "Fees & Comm",
         "Amount"
     ]
     schwab_symbols = [
@@ -54,18 +54,18 @@ def main():
     ]
 
     # static vanguard variables
-    vanguard_types=[
+    vanguard_types = [
         "Buy",
         "Buy (exchange)",
         "Sell",
         "Sell (exchange)",
         "Reinvestment"
     ]
-    vanguard_numbers=[
+    vanguard_numbers = [
         "Shares",
         "Share Price",
         "Principal Amount",
-        "Commission Fees", 
+        "Commission Fees",
         "Net Amount",
         "Accrued Interest"
     ]
@@ -86,7 +86,6 @@ def main():
     schwabdf = filter_date(schwabdf, "Date", start_date, end_date)
     schwabdf.to_csv(f'{output_fp}schwab.csv', index=False)
 
-
     # process merrill statement
     merrilldf = read_merrill_statement(input_fp, merrill_input_file)
     merrilldf = clean_dates(merrilldf, "Trade Date")
@@ -94,18 +93,23 @@ def main():
     for col in merrill_numbers:
         merrilldf = clean_numbercol(merrilldf, col)
     merrilldf = filter_symbols(merrilldf, 'Symbol', merrill_symbols)
-    merrilldf = filter_date(merrilldf, 'Trade Date', start_date, end_date) 
+    merrilldf = filter_date(merrilldf, 'Trade Date', start_date, end_date)
     export_merrill(merrilldf, output_fp, 'merrill.csv')
 
     # process vanguard statement
     vanguarddf = read_vanguard_statement(input_fp, vanguard_input_file)
     vanguarddf = clean_dates(vanguarddf, "Trade Date")
-    vanguarddf = filter_transaction_types(vanguarddf, "Transaction Type", vanguard_types)
+    vanguarddf = filter_transaction_types(
+            vanguarddf,
+            "Transaction Type",
+            vanguard_types
+    )
     for col in vanguard_numbers:
         vanguarddf = clean_numbercol(vanguarddf, col)
     vanguarddf = filter_symbols(vanguarddf, "Symbol", vanguard_symbols)
     vanguarddf = filter_date(vanguarddf, "Trade Date", start_date, end_date)
     export_vanguard(vanguarddf, output_fp, "vanguard.csv")
+
 
 def read_schwab_statement(file_path, file_name):
     full_path = f"{file_path}{file_name}"
@@ -120,27 +124,29 @@ def read_merrill_statement(file_path, file_name):
     full_path = f"{file_path}{file_name}"
     mdf = pd.read_csv(
         full_path,
-        skiprows=[0,1,2,3,5,6],
-        error_bad_lines = False
+        skiprows=[0, 1, 2, 3, 5, 6],
+        error_bad_lines=False
     )
     mdf = mdf.rename(str.strip, axis='columns')
-    mdf = mdf.rename({'Symbol/ CUSIP':'Symbol'}, axis='columns')
+    mdf = mdf.rename({'Symbol/ CUSIP': 'Symbol'}, axis='columns')
 
-    mdf = mdf.dropna(subset = ['Trade Date'])
+    mdf = mdf.dropna(subset=['Trade Date'])
     mdf['Quantity'].replace(' ', '', inplace=True)
     mdf['Quantity'].replace('', np.nan, inplace=True)
-    mdf = mdf.dropna(subset = ['Quantity'])
+    mdf = mdf.dropna(subset=['Quantity'])
 
     mdf['Symbol'] = mdf['Symbol'].str.strip()
     return mdf
 
-def read_vanguard_statement(file_path, file_name): 
+
+def read_vanguard_statement(file_path, file_name):
     full_path = f"{file_path}{file_name}"
     vdf = pd.read_csv(
         full_path,
         skiprows=10
     )
     return vdf
+
 
 def clean_dates(df, datecol):
     df[datecol] = pd.to_datetime(df[datecol], errors="coerce")
@@ -154,7 +160,7 @@ def filter_transaction_types(df, trans_type_colname, valid_trans_types):
 
 
 def filter_merrill_descriptions(df, valid_description_starts):
-    filtered_df = df.loc[df['Description'].str.startswith(tuple(valid_description_starts)) ]
+    filtered_df = df.loc[df['Description'].str.startswith(tuple(valid_description_starts))]
     filtered_df.loc[:, 'Transaction Type'] = None
 
     # iterate over the rows of the dataframe
@@ -184,20 +190,33 @@ def filter_date(df, datecol, start_date, end_date):
 
 
 def filter_symbols(df, symbolcol, symbollist):
-    df = df[ df[symbolcol].isin(symbollist) ]
+    df = df[df[symbolcol].isin(symbollist)]
     return df
 
+
 def export_merrill(df: pd.DataFrame, output_filepath, output_filename):
-    export_df = df.loc[:, ['Trade Date', 'Symbol', 'Quantity', 'Amount', 'Transaction Type']]
+    export_df = df.loc[:,
+                       ['Trade Date',
+                        'Symbol',
+                        'Quantity',
+                        'Amount',
+                        'Transaction Type']]
     export_df.loc['Amount'] = -1 * df['Amount']
     export_df.dropna(inplace=True)
     export_df.to_csv(f'{output_filepath}{output_filename}', index=False)
 
+
 def export_vanguard(df: pd.DataFrame, output_filepath, output_filename):
-    export_df = df.loc[:, ['Trade Date', 'Symbol', 'Shares', 'Net Amount', 'Transaction Type']]
+    export_df = df.loc[:,
+                       ['Trade Date',
+                        'Symbol',
+                        'Shares',
+                        'Net Amount',
+                        'Transaction Type']]
     export_df.loc['Net Amount'] = -1 * df['Net Amount']
     export_df.dropna(inplace=True)
     export_df.to_csv(f'{output_filepath}{output_filename}', index=False)
 
+
 if __name__ == '__main__':
-    main() 
+    main()
